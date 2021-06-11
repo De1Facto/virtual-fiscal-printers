@@ -22,7 +22,7 @@ public class IslCurrentFiscalReceiptImpl implements IslCurrentFiscalReceipt {
     }
 
     private void initializePaymentsMap() {
-        for(var i=0; i < 11; i++) {
+        for(var i=0; i < 10; i++) {
             paymentsTotals.put(i,0L);
         }
     }
@@ -107,7 +107,7 @@ public class IslCurrentFiscalReceiptImpl implements IslCurrentFiscalReceipt {
             throw new RuntimeException("INVALID UNIQUE SALE NUMBER");
         }
         uniqueSaleNumber = addItemCommand.getUniqueSaleNumber();
-        amount += addItemCommand.getPrice() * addItemCommand.getQuantity();
+        amount += addItemCommand.getPrice() * Math.round(addItemCommand.getQuantity() / (float)1000);
         commandStack.push(addItemCommand);
     }
 
@@ -116,15 +116,16 @@ public class IslCurrentFiscalReceiptImpl implements IslCurrentFiscalReceipt {
             throw new RuntimeException("CANT DO REVERSAL OUTSIDE REVERSAL RECEIPT");
         if(!addReversalItem.getUniqueSaleNumber().equals(uniqueSaleNumber))
             throw new RuntimeException("INVALID UNIQUE SALE NUM");
-        amount += addReversalItem.getPrice() * addReversalItem.getQuantity();
+        amount += addReversalItem.getPrice() * Math.round(addReversalItem.getQuantity() / (float) 1000);
         commandStack.push(addReversalItem);
     }
 
     @Override
     public void addPayment(IslPaymentAndFinishCommand addPaymentCommand) {
-        if(addPaymentCommand.getAmountGiven() == 0) {
+        if(addPaymentCommand.getAmountGiven().equals(0L)) {
             paymentsTotals.put(addPaymentCommand.getPayment().intValue(),amount);
             finishReceiptSequence();
+            return;
         }
         paymentsTotals.put(addPaymentCommand.getPayment().intValue(),addPaymentCommand.getAmountGiven());
         commandStack.push(addPaymentCommand);
@@ -134,6 +135,7 @@ public class IslCurrentFiscalReceiptImpl implements IslCurrentFiscalReceipt {
                     paymentsTotals.get(addPaymentCommand.getPayment().intValue()) + (amount - computeReceiptTotalPayments())
                     );
             finishReceiptSequence();
+            return;
         }
         amount -= addPaymentCommand.getAmountGiven();
     }

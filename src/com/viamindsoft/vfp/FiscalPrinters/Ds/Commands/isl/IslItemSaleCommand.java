@@ -1,6 +1,7 @@
 package com.viamindsoft.vfp.FiscalPrinters.Ds.Commands.isl;
 
 import com.viamindsoft.vfp.FiscalPrinters.Ds.Commands.Command;
+import com.viamindsoft.vfp.ISLFiscalPrinter;
 
 public class IslItemSaleCommand implements Command {
 
@@ -8,14 +9,24 @@ public class IslItemSaleCommand implements Command {
     protected long quantity;
     protected long number;
     protected long price;
-    protected byte department;
-    protected byte taxGroup;
-    protected byte singleTransaction;
+    protected int department;
+    protected int taxGroup;
+    protected int singleTransaction;
     protected boolean flag;
     protected String name;
+    protected ISLFiscalPrinter printer;
 
 
-    protected IslItemSaleCommand(String uniqueSaleNumber, long quantity, long number, long price, byte department, byte taxGroup, byte singleTransaction, boolean flag, String name) {
+    protected IslItemSaleCommand(String uniqueSaleNumber,
+                                 long quantity,
+                                 long number,
+                                 long price,
+                                 int department,
+                                 int taxGroup,
+                                 int singleTransaction,
+                                 boolean flag,
+                                 String name,
+                                 ISLFiscalPrinter printer) {
         this.uniqueSaleNumber = uniqueSaleNumber;
         this.quantity = quantity;
         this.number = number;
@@ -25,9 +36,10 @@ public class IslItemSaleCommand implements Command {
         this.singleTransaction = singleTransaction;
         this.flag = flag;
         this.name = name;
+        this.printer = printer;
     }
 
-    public static IslItemSaleCommand fromString(String inputString) {
+    public static IslItemSaleCommand fromString(String inputString,ISLFiscalPrinter printer) {
         return new IslItemSaleCommand(
                 inputString.substring(0,21),
                 parseLong(inputString.substring(21),8,99999999L),
@@ -37,7 +49,8 @@ public class IslItemSaleCommand implements Command {
                 parseTaxGroup(inputString.charAt(46)),
                 parseTransaction(inputString.charAt(47)),
                 parseFlag(inputString.charAt(48)),
-                inputString.substring(49)
+                inputString.substring(49),
+                printer
         );
     }
 
@@ -48,19 +61,19 @@ public class IslItemSaleCommand implements Command {
         return value;
     }
 
-    protected static byte parseDepartment(char c) {
-        byte result = (byte) c;
+    protected static int parseDepartment(char c) {
+        int result = Integer.parseInt(String.valueOf(c));
         if(result > 10 || result < 0) throw new RuntimeException("INVALID DEPARTMENT");
         return result;
     }
 
-    protected static byte parseTaxGroup(char c) {
-        byte result = (byte) c;
+    protected static int parseTaxGroup(char c) {
+        int result = Integer.parseInt(String.valueOf(c));
         if(result > 8 || result < 1) throw new RuntimeException("INVALID TAX GROUP");
         return result;
     }
-    protected static byte parseTransaction(char c) {
-        byte result = (byte) c;
+    protected static int parseTransaction(char c) {
+        int result = Integer.parseInt(String.valueOf(c));
         if(result > 3 || result < 0) throw new RuntimeException("INVALID TAX TRANSACTION TYPE");
         return result;
     }
@@ -86,15 +99,15 @@ public class IslItemSaleCommand implements Command {
         return price;
     }
 
-    public byte getDepartment() {
+    public int getDepartment() {
         return department;
     }
 
-    public byte getTaxGroup() {
+    public int getTaxGroup() {
         return taxGroup;
     }
 
-    public byte getSingleTransaction() {
+    public int getSingleTransaction() {
         return singleTransaction;
     }
 
@@ -104,5 +117,10 @@ public class IslItemSaleCommand implements Command {
 
     public String getName() {
         return name;
+    }
+
+    @Override
+    public void execute() {
+        printer.execute(this);
     }
 }

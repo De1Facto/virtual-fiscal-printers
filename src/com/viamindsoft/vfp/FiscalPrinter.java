@@ -1,9 +1,11 @@
 package com.viamindsoft.vfp;
 
-import com.fazecast.jSerialComm.SerialPort;
+
+import com.viamindsoft.vfp.FiscalPrinters.Ds.Commands.Command;
+import com.viamindsoft.vfp.FiscalPrinters.Ds.Responses.Response;
 
 public interface FiscalPrinter  {
-    SerialPort serialPort();
-    void listen();
     FiscalPrinterData fiscalPrinterData();
+    void execute(Command command);
+    Response getResponse();
 }

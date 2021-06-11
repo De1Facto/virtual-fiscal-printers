@@ -1,9 +1,7 @@
 package com.viamindsoft.main;
 
 import com.fazecast.jSerialComm.SerialPort;
-import com.viamindsoft.vfp.FiscalPrinter;
-import com.viamindsoft.vfp.FiscalPrinterDataImpl;
-import com.viamindsoft.vfp.ISLFiscalPrinter;
+import com.viamindsoft.vfp.*;
 
 import java.nio.file.Path;
 import java.util.logging.Logger;
@@ -14,11 +12,11 @@ public class Main {
         Path serialDevice = Path.of("/dev/tnt0");
         Logger logger = Logger.getGlobal();
         SerialPort port = SerialPort.getCommPort(serialDevice.toString());
-        FiscalPrinter fiscalPrinter = new ISLFiscalPrinter(
-                port,
+        ISLFiscalPrinter fiscalPrinter = new ISLFiscalPrinter(
                 FiscalPrinterDataImpl.factory("IS010101","12345678","ISL5011S-KL"),
                 logger
         );
-        fiscalPrinter.listen();
+        FiscalDevice device = new ISLFiscalDevice(port,fiscalPrinter,logger);
+        device.listen();
     }
 }

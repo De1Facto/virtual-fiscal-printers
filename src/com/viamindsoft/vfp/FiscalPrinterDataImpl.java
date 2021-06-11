@@ -2,6 +2,7 @@ package com.viamindsoft.vfp;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class FiscalPrinterDataImpl implements FiscalPrinterData {
@@ -14,18 +15,7 @@ public class FiscalPrinterDataImpl implements FiscalPrinterData {
     private long invoiceEnd = 999_999_999;
     private int errorCode = 0;
 
-    private Map<Integer,Long> paymentTotals = Map.of(
-        0, 0L,
-            1, 0L,
-            2, 0L,
-            3, 0L,
-            4, 0L,
-            5, 0L,
-            6, 0L,
-            7, 0L,
-            8, 0L,
-            9, 0L
-    );
+    private Map<Integer,Long> paymentTotals = new HashMap<>();
 
     private final Map<String, Integer> paymentNamesToKeys = Map.of(
             "cash",0,
@@ -47,6 +37,14 @@ public class FiscalPrinterDataImpl implements FiscalPrinterData {
         this.invoiceStart = invoiceStart;
         this.invoiceEnd = invoiceEnd;
         this.fiscalPrinterModel = fiscalPrinterModel;
+        initializePaymentTotals();
+
+    }
+
+    private void initializePaymentTotals() {
+        for(var i =0; i < 10; i++) {
+            paymentTotals.put(i,0L);
+        }
     }
 
     public static FiscalPrinterData factory(String serialNumber, String fiscalMemoryNum, String fiscalPrinterModel, long invoiceStart, long invoiceEnd) {
@@ -148,6 +146,7 @@ public class FiscalPrinterDataImpl implements FiscalPrinterData {
 
 
     public void addTotal(int paymentType, Long amount) {
+        System.out.println("PaymentType: "+paymentType+" amount to add: "+ amount);
         paymentTotals.put(paymentType,paymentTotals.get(paymentType) + amount);
     }
 

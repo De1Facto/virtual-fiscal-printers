@@ -1,7 +1,6 @@
 package com.viamindsoft.vfp.FiscalPrinters.Ds.FiscalReceipts.isl;
 
 import com.viamindsoft.vfp.FiscalPrinters.Ds.Commands.isl.*;
-import serialDevicesMock.FiscalPrinters.Ds.Commands.isl.*;
 import com.viamindsoft.vfp.FiscalPrinters.Ds.FiscalReceipts.CurrentFiscalReceipt;
 
 public interface IslCurrentFiscalReceipt extends CurrentFiscalReceipt {

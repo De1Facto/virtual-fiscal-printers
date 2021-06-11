@@ -1,33 +1,46 @@
 package com.viamindsoft.vfp.FiscalPrinters.Ds.Commands.isl;
 
+import com.viamindsoft.vfp.ISLFiscalPrinter;
+
 import java.time.LocalDateTime;
 import java.time.Month;
 
 public class IslOpenReversalReceiptCommand implements IslCommand {
-    private short reason;
-    private long docNumber;
-    private LocalDateTime dateTime;
-    private int fmNumber;
-    private String uniqueSaleNumber;
-    private long invoiceNumber;
+    private final short reason;
+    private final long docNumber;
+    private final LocalDateTime dateTime;
+    private final int fmNumber;
+    private final String uniqueSaleNumber;
+    private final long invoiceNumber;
 
-    private IslOpenReversalReceiptCommand(short reason, long docNumber, LocalDateTime dateTime, int fmNumber, String uniqueSaleNumber, long invoiceNumber) {
+    private final ISLFiscalPrinter printer;
+
+    private IslOpenReversalReceiptCommand(
+            short reason,
+            long docNumber,
+            LocalDateTime dateTime,
+            int fmNumber,
+            String uniqueSaleNumber,
+            long invoiceNumber,
+            ISLFiscalPrinter printer) {
         this.reason = reason;
         this.docNumber = docNumber;
         this.dateTime = dateTime;
         this.fmNumber = fmNumber;
         this.uniqueSaleNumber = uniqueSaleNumber;
         this.invoiceNumber = invoiceNumber;
+        this.printer = printer;
     }
 
-    public static IslOpenReversalReceiptCommand fromString(String inputString) {
+    public static IslOpenReversalReceiptCommand fromString(String inputString, ISLFiscalPrinter receiver) {
         return new IslOpenReversalReceiptCommand(
                 parseReason(inputString),
                 parseLong(inputString.substring(1),10),
                 parseDate(inputString.substring(11)),
                 (int) parseLong(inputString.substring(25),8),
                 inputString.substring(33,54),
-                parseLong(inputString.substring(54),10)
+                parseLong(inputString.substring(54),10),
+                receiver
         );
     }
     private static short parseReason(String string) {
@@ -74,5 +87,10 @@ public class IslOpenReversalReceiptCommand implements IslCommand {
 
     public long getInvoiceNumber() {
         return invoiceNumber;
+    }
+
+    @Override
+    public void execute() {
+        printer.execute(this);
     }
 }
