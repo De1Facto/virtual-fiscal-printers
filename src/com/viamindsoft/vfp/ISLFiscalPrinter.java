@@ -26,16 +26,17 @@ import java.util.logging.Logger;
 public class ISLFiscalPrinter implements FiscalPrinter {
 
 
-    private final FiscalPrinterData fiscalPrinterData;
+    private final IslFiscalPrinterData fiscalPrinterData;
     private boolean receiptOpen = false;
     private final Logger logger;
     private Response outputBuffer;
 
     private final Stack<Command> commandStack = new Stack<>();
     private IslCurrentFiscalReceipt currentFiscalReceipt = null;
+    private IslCurrentFiscalReceipt lastReceipt = null;
 
 
-    public ISLFiscalPrinter(FiscalPrinterData fiscalPrinterData, Logger logger) {
+    public ISLFiscalPrinter(IslFiscalPrinterData fiscalPrinterData, Logger logger) {
         this.fiscalPrinterData = fiscalPrinterData;
         this.logger = logger;
     }
@@ -90,7 +91,7 @@ public class ISLFiscalPrinter implements FiscalPrinter {
     }
 
     private void verifyLastCommandWasSaleCommand() {
-        if(!(commandStack.peek() instanceof IslItemSaleCommand) || !(commandStack.peek() instanceof IslItemReversalCommand))
+        if(!(commandStack.peek() instanceof IslItemSaleCommand) && !(commandStack.peek() instanceof IslItemReversalCommand))
             throw new RuntimeException("LAST COMMAND WAS NOT A SALE COMMAND");
     }
 
@@ -147,6 +148,7 @@ public class ISLFiscalPrinter implements FiscalPrinter {
             currentFiscalReceipt.addDiscountOrSurcharge(command);
         }catch (RuntimeException exception) {
             verifyLastCommandWasSubtotal();
+            currentFiscalReceipt.addDiscountOrSurcharge(command);
         }
         commandStack.push(command);
         writeToOb(ISLSingleByteResponse.ack());
@@ -168,6 +170,7 @@ public class ISLFiscalPrinter implements FiscalPrinter {
     public void execute(IslPaymentAndFinishCommand command) {
         verifyThereIsNoError();
         verifyReceiptIsOpen();
+        logger.info("Payment Amount Given: "+command.getAmountGiven());
         currentFiscalReceipt.addPayment(command);
         commandStack.push(command);
         if(currentFiscalReceipt.isFinished()) {
@@ -279,6 +282,71 @@ public class ISLFiscalPrinter implements FiscalPrinter {
         writeToOb(builder);
     }
 
+    public void execute(IslKlenStatusCommand command) {
+        writeToOb(ISLSingleByteResponse.ack());
+    }
+    public void execute(IslLastReceiptNumberAndSubtotalCommand command) {
+        IslDataResponseBuilder builder = new IslDataResponseBuilder();
+        builder.append(lastReceipt.documentNumber().toString(),'0',6,true);
+        builder.append(lastReceipt.amount().toString(),'0',8,true);
+        builder.append(String.valueOf(fiscalPrinterData.lastInvoiceNum()),'0',10,true);
+        writeToOb(builder);
+    }
+
+    public void execute(IslRevenueByTaxGroupsCommand command) {
+
+    }
+
+    public void execute(IslFMTotalRevenueCommand command) {
+
+    }
+
+    public void execute(IslDiscountsAndSurchargesTotalCommand command) {
+
+    }
+    public void execute(IslPrinterVersionCommand command) {
+        IslDataResponseBuilder builder = new IslDataResponseBuilder();
+        builder.append(fiscalPrinterData.fiscalPrinterModel());
+        writeToOb(builder);
+    }
+
+    public void execute(IslBatteryStatusCommand command) {
+
+    }
+
+    public void execute(IslCurrentErrorCommand command) {
+        IslDataResponseBuilder builder = new IslDataResponseBuilder();
+        builder.append(fiscalPrinterData.errorCode());
+        writeToOb(builder);
+    }
+
+    public void execute(IslCurrentReceiptCurrentTotalCommand command) {
+
+    }
+
+    public void execute(IslBitwiseStatusCommand command) {
+        IslDataResponseBuilder builder = new IslDataResponseBuilder();
+        builder.append(fiscalPrinterData.getBitwiseStatus().toString());
+        writeToOb(builder);
+    }
+
+    public void execute(IslReadPaymentAssociationCommand command) {
+        IslDataResponseBuilder builder = new IslDataResponseBuilder();
+        String payment = fiscalPrinterData.getPaymentsMappings().get(command.getPaymentType()).toString();
+        if(payment.length() < 2) {
+            payment = "0"+payment;
+        }
+        builder.append(payment);
+        writeToOb(builder);
+    }
+
+    public void execute(IslSetPaymentAssociationCommand command) {
+        writeToOb(ISLSingleByteResponse.ack()); //NB: This is a stub after all...
+    }
+
+    public void execute(IslSetPaymentTextCommand command) {
+        writeToOb(ISLSingleByteResponse.ack());
+    }
 
     public void execute(UnIdentifiedCommand command) {
         writeToOb(ISLSingleByteResponse.nack());
@@ -292,6 +360,7 @@ public class ISLFiscalPrinter implements FiscalPrinter {
 
     private void closeReceiptAndClearUnp() {
         receiptOpen = false;
+        lastReceipt = currentFiscalReceipt;
         currentFiscalReceipt = null;
     }
 

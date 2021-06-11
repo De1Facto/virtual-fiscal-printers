@@ -16,15 +16,16 @@ public class IslSetDateTimeCommand implements Command {
     }
 
     public static IslSetDateTimeCommand fromString(String s, ISLFiscalPrinter printer) {
-        if(s.length() < 14) throw new RuntimeException("INVALID DATE TIME FORMAT");
+        if(s.length() < 12) throw new RuntimeException("INVALID DATE TIME FORMAT");
+        int year = 2000 + Integer.parseInt(s.substring(4,6));
         return new IslSetDateTimeCommand(
                 LocalDateTime.of(
-                      Integer.parseInt(s.substring(4,8)),
+                      year,
                         Month.of(Integer.parseInt(s.substring(2,4))),
                         Integer.parseInt(s.substring(0,2)),
+                        Integer.parseInt(s.substring(6,8)),
                         Integer.parseInt(s.substring(8,10)),
-                        Integer.parseInt(s.substring(10,12)),
-                        Integer.parseInt(s.substring(12))
+                        Integer.parseInt(s.substring(10))
                 ),
                 printer);
     }

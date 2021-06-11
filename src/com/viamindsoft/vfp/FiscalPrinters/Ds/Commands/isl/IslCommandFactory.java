@@ -43,7 +43,9 @@ public class IslCommandFactory implements CommandFactory {
             case "61": return IslDepositOrWithdrawMoneyCommand.fromString(strippedCommand,receiver);
             case "73": return IslSetDateTimeCommand.fromString(strippedCommand,receiver);
             case "75": return IslSetOperatorCommand.fromString(strippedCommand,receiver);
+            case "76": return IslSetPaymentTextCommand.fromString(strippedCommand,receiver);
             case "81": return IslPrintCommentCommand.fromString(strippedCommand,receiver);
+            case "92": return parseFpFlagsCommands(strippedCommand);
             case "A8": return new IslKlenReportCommand(receiver);
             case "AA": return new IslLastReceiptCopyCommand(receiver);
             case "B2": return new IslClearErrorsCommand(receiver);
@@ -54,6 +56,7 @@ public class IslCommandFactory implements CommandFactory {
     }
 
     private Command parseFpStatusCommand(String s) {
+
         switch (s.substring(0,2)) {
             case "00": return new IslKlenStatusCommand(receiver);
             case "01": return new IslLastReceiptNumberAndSubtotalCommand(receiver);
@@ -68,6 +71,18 @@ public class IslCommandFactory implements CommandFactory {
             case "0A": return new UnIdentifiedCommand(receiver);
             case "0B": return new IslCurrentReceiptCurrentTotalCommand(receiver);
             case "0C": return new IslBitwiseStatusCommand(receiver);
+            default: return new UnIdentifiedCommand(receiver);
+        }
+    }
+
+    private Command parseFpFlagsCommands(String s) {
+        String subCommandString = s.substring(0,2);
+        String subCommandData = s.substring(2);
+        switch (subCommandString) {
+            case "1D":
+                if(subCommandData.length() == 2)
+                    return IslReadPaymentAssociationCommand.fromString(subCommandData,receiver);
+                return IslSetPaymentAssociationCommand.fromString(subCommandData,receiver);
             default: return new UnIdentifiedCommand(receiver);
         }
     }

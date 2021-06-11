@@ -22,4 +22,5 @@ public interface FiscalPrinterData {
     void updateTotals(Map<Integer,Long> payments);
     void addTotal(int paymentType, Long amount);
     boolean attemptToClearErrors();
+    Map<Integer, Integer> getPaymentsMappings();
 }

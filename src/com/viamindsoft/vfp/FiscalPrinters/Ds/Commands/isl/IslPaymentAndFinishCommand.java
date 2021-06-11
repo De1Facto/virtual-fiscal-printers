@@ -22,8 +22,8 @@ public class IslPaymentAndFinishCommand implements Command {
         if(inputString.length() < 13) throw new RuntimeException("INVALID FORMAT");
         return new IslPaymentAndFinishCommand(
                 Short.parseShort(inputString.substring(0,1)),
-                Long.parseLong(inputString.substring(1,12)),
-                Boolean.parseBoolean(inputString.substring(12,13)),
+                Long.parseLong(inputString.substring(1,13)),
+                Integer.parseInt(inputString.substring(13)) > 0,
                 printer);
     }
     private static IslPaymentAndFinishCommand defaultFinish(String string,ISLFiscalPrinter printer) {

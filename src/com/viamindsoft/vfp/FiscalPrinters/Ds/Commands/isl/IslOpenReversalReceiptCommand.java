@@ -56,12 +56,12 @@ public class IslOpenReversalReceiptCommand implements IslCommand {
 
     private static LocalDateTime parseDate(String string) {
         return LocalDateTime.of(
-                Integer.parseInt(string.substring(15,19)),
-                Month.of(Integer.parseInt(string.substring(13,15))),
-                Integer.parseInt(string.substring(11,13)),
-                Integer.parseInt(string.substring(19,21)),
-                Integer.parseInt(string.substring(21,23)),
-                Integer.parseInt(string.substring(23,25))
+                Integer.parseInt(string.substring(4,8)),
+                Month.of(Integer.parseInt(string.substring(2,4))),
+                Integer.parseInt(string.substring(0,2)),
+                Integer.parseInt(string.substring(8,10)),
+                Integer.parseInt(string.substring(10,12)),
+                Integer.parseInt(string.substring(12,14))
         );
     }
 

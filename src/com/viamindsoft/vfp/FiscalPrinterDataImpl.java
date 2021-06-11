@@ -1,11 +1,13 @@
 package com.viamindsoft.vfp;
 
+import com.viamindsoft.vfp.FiscalPrinters.Ds.supportingDs.isl.IslBitwiseStatus;
+import com.viamindsoft.vfp.FiscalPrinters.Ds.supportingDs.isl.IslBitwiseStatusImpl;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class FiscalPrinterDataImpl implements FiscalPrinterData {
+public class FiscalPrinterDataImpl implements IslFiscalPrinterData {
     private final String serialNumber;
     private final String fiscalMemoryNum;
     private final String fiscalPrinterModel;
@@ -14,21 +16,19 @@ public class FiscalPrinterDataImpl implements FiscalPrinterData {
     private long invoiceStart = 1;
     private long invoiceEnd = 999_999_999;
     private int errorCode = 0;
+    private IslBitwiseStatus bitwiseStatus = IslBitwiseStatusImpl.fromStatusArray(
+            new byte[][]{
+                    new byte[]{ 0x00, 0x01 },
+                    new byte[]{ 0x00, 0x08 },
+                    new byte[]{ 0x02, 0x07 },
+                    new byte[]{ 0x00, 0x00 },
+                    new byte[]{ 0x00, 0x00 },
+                    new byte[]{ 0x00, 0x00 },
+            }
+    );
 
     private Map<Integer,Long> paymentTotals = new HashMap<>();
-
-    private final Map<String, Integer> paymentNamesToKeys = Map.of(
-            "cash",0,
-            "check",1,
-            "coupons",2,
-            "ext-coupons",3,
-            "packaging",4,
-            "internal-usage",5,
-            "damage",6,
-            "card",7,
-            "bank",8,
-            "reserved1",9
-    );
+    private Map<Integer,Integer> paymentsMappings = new HashMap<>();
 
 
     private FiscalPrinterDataImpl(String serialNumber, String fiscalMemoryNum, String fiscalPrinterModel, long invoiceStart, long invoiceEnd) {
@@ -38,6 +38,7 @@ public class FiscalPrinterDataImpl implements FiscalPrinterData {
         this.invoiceEnd = invoiceEnd;
         this.fiscalPrinterModel = fiscalPrinterModel;
         initializePaymentTotals();
+        initializePaymentsMappings();
 
     }
 
@@ -46,12 +47,17 @@ public class FiscalPrinterDataImpl implements FiscalPrinterData {
             paymentTotals.put(i,0L);
         }
     }
+    private void initializePaymentsMappings() {
+        for(var i = 0; i < 11; i++) {
+            paymentsMappings.put(i,i);
+        }
+    }
 
-    public static FiscalPrinterData factory(String serialNumber, String fiscalMemoryNum, String fiscalPrinterModel, long invoiceStart, long invoiceEnd) {
+    public static FiscalPrinterDataImpl factory(String serialNumber, String fiscalMemoryNum, String fiscalPrinterModel, long invoiceStart, long invoiceEnd) {
         return new FiscalPrinterDataImpl(serialNumber,fiscalMemoryNum,fiscalPrinterModel,invoiceStart,invoiceEnd);
     }
 
-    public static FiscalPrinterData factory(String serialNumber, String fiscalMemoryNum,String fiscalPrinterModel) {
+    public static FiscalPrinterDataImpl factory(String serialNumber, String fiscalMemoryNum,String fiscalPrinterModel) {
         return new FiscalPrinterDataImpl(serialNumber,fiscalMemoryNum,fiscalPrinterModel,1L,999_999_999);
     }
 
@@ -157,5 +163,13 @@ public class FiscalPrinterDataImpl implements FiscalPrinterData {
             return true;
         }
         return false;
+    }
+
+    public IslBitwiseStatus getBitwiseStatus() {
+        return bitwiseStatus;
+    }
+
+    public Map<Integer, Integer> getPaymentsMappings() {
+        return paymentsMappings;
     }
 }

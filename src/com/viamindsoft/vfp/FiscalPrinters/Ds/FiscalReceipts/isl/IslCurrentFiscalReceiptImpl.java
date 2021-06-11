@@ -201,7 +201,7 @@ public class IslCurrentFiscalReceiptImpl implements IslCurrentFiscalReceipt {
 
     @Override
     public void addDiscountOrSurcharge(IslPercentDiscountOrSurcharge addPercentDiscountOrSurcharge) {
-        if(isNotSaleCommand(commandStack.peek()) || !(commandStack.peek() instanceof IslSubtotalCommand))
+        if(isNotSaleCommand(commandStack.peek()) && !(commandStack.peek() instanceof IslSubtotalCommand))
             throw new RuntimeException("CANT ADD DISCOUNT OR SURCHARGE");
         if(commandStack.peek() instanceof IslSubtotalCommand) {
             percentDiscountOrSurchargeToSubtotal(addPercentDiscountOrSurcharge);

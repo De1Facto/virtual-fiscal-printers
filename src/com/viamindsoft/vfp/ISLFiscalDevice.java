@@ -45,11 +45,7 @@ public class ISLFiscalDevice implements FiscalDevice {
 
                 }
             }
-        } catch (RuntimeException e) {
-            logger.log(Level.WARNING, e.getMessage());
-            writeToOb(IslFrameImpl.fromResponse(ISLSingleByteResponse.nack()));
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             logger.log(Level.SEVERE, e.getMessage());
             e.printStackTrace();
         } finally {
@@ -60,8 +56,13 @@ public class ISLFiscalDevice implements FiscalDevice {
     private void parseAndExecuteCommand(byte[] bytes) {
         Command command = commandFactory.createCommand(bytes);
         logger.log(Level.INFO, "Command is: "+ command.getClass());
-        command.execute();
-        writeToOb();
+        try {
+            command.execute();
+            writeToOb();
+        }catch (RuntimeException e) {
+            logger.log(Level.WARNING, e.getMessage());
+            writeToOb(IslFrameImpl.fromResponse(ISLSingleByteResponse.nack()));
+        }
     }
     private void writeToOb() {
         writeToOb(IslFrameImpl.fromResponse(fiscalPrinter.getResponse()));
