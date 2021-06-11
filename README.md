@@ -1,7 +1,7 @@
-#Virtual Fiscal Printer Library (VFPL v0.0.1)
-
-###Goal - Remove the need for physical Fiscal Devices for testing purposes
-
+Virtual Fiscal Printer Library (VFPL v0.0.1)
+-
+Goal - Remove the need for physical Fiscal Devices for testing purposes
+=
 > ### Envisioned Support for Fiscal Devices Emulation
 > + ISL (in progress)
 > + Daisy (not supported yet)
