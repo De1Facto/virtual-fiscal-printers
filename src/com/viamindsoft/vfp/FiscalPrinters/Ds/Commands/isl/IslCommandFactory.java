@@ -36,7 +36,7 @@ public class IslCommandFactory implements CommandFactory {
             case "47": return IslPercentDiscountOrSurcharge.fromString(strippedCommand,receiver);
             case "48": return new IslSubtotalCommand(receiver);
             case "49": return IslPaymentAndFinishCommand.fromString(strippedCommand,receiver);
-            case "50": return new UnIdentifiedCommand(receiver); //TODO MAKE INVOICE STUFF
+            case "50": return parseFpInvoiceSubCommands(strippedCommand);
             case "51": return IslDailyReportCommand.fromString(strippedCommand,receiver);
             case "55": return new UnIdentifiedCommand(receiver); //TODO MAKE FMREP
             case "56": return new UnIdentifiedCommand(receiver); //TODO MAKE FMREP
@@ -83,6 +83,19 @@ public class IslCommandFactory implements CommandFactory {
                 if(subCommandData.length() == 2)
                     return IslReadPaymentAssociationCommand.fromString(subCommandData,receiver);
                 return IslSetPaymentAssociationCommand.fromString(subCommandData,receiver);
+            default: return new UnIdentifiedCommand(receiver);
+        }
+    }
+
+    private Command parseFpInvoiceSubCommands(String s) {
+        String subCommandString = s.substring(0,2);
+        switch (subCommandString) {
+
+            case "03": return IslReceiverEikAndVatNumbersCommand.factory(s.substring(2,14),s.substring(14),receiver);
+            case "01":
+            case "02":
+            case "04": return ISLInvoiceReceiverStandardTextFieldCommand.factory(s.substring(2),receiver);
+            case "05": return new ISLFinishInvoiceCommand(receiver);
             default: return new UnIdentifiedCommand(receiver);
         }
     }

@@ -348,6 +348,29 @@ public class ISLFiscalPrinter implements FiscalPrinter {
         writeToOb(ISLSingleByteResponse.ack());
     }
 
+    public void execute(ISLInvoiceReceiverStandardTextFieldCommand command) {
+        verifyThereIsNoError();
+        verifyReceiptIsNotOpen();
+        commandStack.push(command);
+        writeToOb(ISLSingleByteResponse.ack());
+    }
+
+    public void execute(IslReceiverEikAndVatNumbersCommand command) {
+        verifyThereIsNoError();
+        verifyReceiptIsNotOpen();
+        if(!(commandStack.peek() instanceof ISLInvoiceReceiverStandardTextFieldCommand))
+            throw new RuntimeException("INVALID INVOICE ORDER");
+        commandStack.push(command);
+        writeToOb(ISLSingleByteResponse.ack());
+    }
+
+    private void execute(ISLFinishInvoiceCommand command) {
+        verifyThereIsNoError();
+        verifyReceiptIsOpen();
+        commandStack.push(command);
+        writeToOb(ISLSingleByteResponse.ack());
+    }
+
     public void execute(UnIdentifiedCommand command) {
         writeToOb(ISLSingleByteResponse.nack());
     }
