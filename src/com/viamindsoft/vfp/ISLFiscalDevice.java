@@ -1,6 +1,9 @@
 package com.viamindsoft.vfp;
 
 import com.fazecast.jSerialComm.SerialPort;
+import com.fazecast.jSerialComm.SerialPortDataListener;
+import com.fazecast.jSerialComm.SerialPortEvent;
+import com.viamindsoft.shared.SerialDeviceDataListener;
 import com.viamindsoft.vfp.FiscalPrinters.Ds.Commands.Command;
 import com.viamindsoft.vfp.FiscalPrinters.Ds.Commands.CommandFactory;
 import com.viamindsoft.vfp.FiscalPrinters.Ds.Commands.isl.IslCommandFactory;
@@ -32,26 +35,22 @@ public class ISLFiscalDevice implements FiscalDevice {
     @Override
     public void listen() {
         serialPort.openPort();
-        try(InputStream in = serialPort.getInputStream()) {
-            outputStream = serialPort.getOutputStream();
-            while (true) {
-                if(in.available() > 0) {
-                    logger.log(Level.INFO, "Available bytes: "+ in.available());
-                    byte[] readNBytes = in.readNBytes(in.available());
-                    logger.log(Level.INFO, "<< " + Arrays.toString(readNBytes));
-                    //if(!port.isOpen()) port.openPort();
-                    parseAndExecuteCommand(readNBytes);
-                    //out.write(outputBytes);
-
-                }
-            }
-        } catch (IOException e) {
-            logger.log(Level.SEVERE, e.getMessage());
-            e.printStackTrace();
-        } finally {
-            serialPort.closePort();
-        }
+        serialPort.setComPortTimeouts(SerialPort.TIMEOUT_NONBLOCKING,SerialPort.TIMEOUT_NONBLOCKING,SerialPort.TIMEOUT_NONBLOCKING);
+        serialPort.setFlowControl(0);
+        serialPort.setParity(0);
+        serialPort.setNumStopBits(1);
+        serialPort.setBaudRate(115200);
+        serialPort.addDataListener(new SerialDeviceDataListener(this));
+        outputStream = serialPort.getOutputStream();
     }
+
+    public void handle(SerialPortEvent event) {
+        logger.log(Level.INFO, "Available bytes: "+ event.getReceivedData().length);
+        byte[] readNBytes = event.getReceivedData();
+        logger.log(Level.INFO, "<< " + Arrays.toString(readNBytes));
+        parseAndExecuteCommand(readNBytes);
+    }
+
 
     private void parseAndExecuteCommand(byte[] bytes) {
         Command command = commandFactory.createCommand(bytes);
