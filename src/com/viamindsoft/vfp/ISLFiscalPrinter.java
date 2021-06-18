@@ -396,40 +396,6 @@ public class ISLFiscalPrinter implements FiscalPrinter {
 
 
 
-
-    private void verifyCorrectPrinterNetworkNum(byte[] inBytes) {
-        FiscalPrinterSerial currentSerial = FiscalPrinterSerialImpl.factory(fiscalPrinterData.serialNumber());
-        String networkStringFromCommand = parseNetworkStringFromBytes(inBytes);
-        String commandString = parseCommandString(inBytes);
-        logger.log(Level.INFO,"CurrentSerial: " + currentSerial+ " NetworkStr: "+ currentSerial.networkString());
-        logger.log(Level.INFO,"NetworkString: "+networkStringFromCommand);
-        logger.log(Level.INFO,"CommandString: "+commandString);
-        if(! currentSerial.networkString().equals(networkStringFromCommand) && (!networkStringFromCommand.equals("0000") && !parseCommandString(inBytes).equals("00"))) {
-            throw new RuntimeException("KUREC");
-        }
-    }
-
-    private String parseNetworkStringFromBytes(byte[] bytes) {
-        int start = 0; int length = 4;
-        if(bytes[0] == 0x02) start+=1;
-        StringBuilder sb = new StringBuilder();
-        for(var i = start; i < (start + length) ; i++) {
-            sb.append((char) bytes[i]);
-        }
-        return sb.toString();
-    }
-
-    private String parseCommandString(byte[] bytes) {
-        int start = 4; int length = 2;
-        if(bytes[0] == 0x02) start+=1;
-        StringBuilder sb = new StringBuilder();
-        for(var i = start; i < (start + length) ; i++) {
-            sb.append((char) bytes[i]);
-        }
-        return sb.toString();
-    }
-
-
     @Override
     public FiscalPrinterData fiscalPrinterData() {
         return fiscalPrinterData;

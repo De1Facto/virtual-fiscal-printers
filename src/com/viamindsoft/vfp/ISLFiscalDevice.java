@@ -7,6 +7,8 @@ import com.viamindsoft.shared.SerialDeviceDataListener;
 import com.viamindsoft.vfp.FiscalPrinters.Ds.Commands.Command;
 import com.viamindsoft.vfp.FiscalPrinters.Ds.Commands.CommandFactory;
 import com.viamindsoft.vfp.FiscalPrinters.Ds.Commands.isl.IslCommandFactory;
+import com.viamindsoft.vfp.FiscalPrinters.Ds.FiscalPrinterSerial;
+import com.viamindsoft.vfp.FiscalPrinters.Ds.FiscalPrinterSerialImpl;
 import com.viamindsoft.vfp.FiscalPrinters.Ds.Frames.Frame;
 import com.viamindsoft.vfp.FiscalPrinters.Ds.Frames.isl.IslFrameImpl;
 import com.viamindsoft.vfp.FiscalPrinters.Ds.Responses.isl.ISLSingleByteResponse;
@@ -56,12 +58,39 @@ public class ISLFiscalDevice implements FiscalDevice {
         Command command = commandFactory.createCommand(bytes);
         logger.log(Level.INFO, "Command is: "+ command.getClass());
         try {
+            verifyCorrectPrinterNetworkNum(bytes);
             command.execute();
             writeToOb();
         }catch (RuntimeException e) {
             logger.log(Level.WARNING, e.getMessage());
             writeToOb(IslFrameImpl.fromResponse(ISLSingleByteResponse.nack()));
         }
+    }
+    private void verifyCorrectPrinterNetworkNum(byte[] inBytes) {
+        FiscalPrinterSerial currentSerial = FiscalPrinterSerialImpl.factory(fiscalPrinter.fiscalPrinterData().serialNumber());
+        String networkStringFromCommand = parseNetworkStringFromBytes(inBytes);
+        if(! currentSerial.networkString().equals(networkStringFromCommand)
+                && (!networkStringFromCommand.equals("0000") && !parseCommandString(inBytes).equals("00"))) {
+            throw new RuntimeException("Incorrect Printer Network Number");
+        }
+    }
+    private String parseNetworkStringFromBytes(byte[] bytes) {
+        int start = 0; int length = 4;
+        if(bytes[0] == 0x02) start+=1;
+        StringBuilder sb = new StringBuilder();
+        for(var i = start; i < (start + length) ; i++) {
+            sb.append((char) bytes[i]);
+        }
+        return sb.toString();
+    }
+    private String parseCommandString(byte[] bytes) {
+        int start = 4; int length = 2;
+        if(bytes[0] == 0x02) start+=1;
+        StringBuilder sb = new StringBuilder();
+        for(var i = start; i < (start + length) ; i++) {
+            sb.append((char) bytes[i]);
+        }
+        return sb.toString();
     }
     private void writeToOb() {
         writeToOb(IslFrameImpl.fromResponse(fiscalPrinter.getResponse()));
