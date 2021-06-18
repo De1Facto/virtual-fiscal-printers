@@ -3,12 +3,6 @@ package com.viamindsoft.main;
 import com.fazecast.jSerialComm.SerialPort;
 import com.viamindsoft.vfp.*;
 
-import java.io.IOException;
-import java.net.Socket;
-import java.net.SocketAddress;
-import java.nio.channels.FileChannel;
-import java.nio.channels.Selector;
-import java.nio.channels.ServerSocketChannel;
 import java.nio.file.Path;
 import java.util.logging.Logger;
 
