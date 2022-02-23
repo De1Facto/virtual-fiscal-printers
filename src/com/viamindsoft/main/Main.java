@@ -9,9 +9,11 @@ import java.util.logging.Logger;
 public class Main {
 
     public static void main(String[] args) {
-        for (var i = 0; i < 8; i+=2) {
-            startPrinter(i);
+        int printerSerialPart = 0;
+        if (args.length > 0) {
+            printerSerialPart = Integer.parseInt(args[0]);
         }
+        startPrinter(printerSerialPart);
     }
 
     private static void startPrinter(int i) {
